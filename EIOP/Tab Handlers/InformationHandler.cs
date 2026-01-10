@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using EIOP.Core;
 using EIOP.Patches;
 using EIOP.Tools;
+using GorillaExtensions;
 using GorillaLocomotion;
-using GorillaNetworking;
 using PlayFab;
 using PlayFab.ClientModels;
 using TMPro;
@@ -35,26 +35,48 @@ public class InformationHandler : TabHandlerBase
     private Transform    modsPanel;
     private TextMeshPro  pingInfo;
     private TextMeshPro  platformInfo;
-    private GameObject   playerHighlighter;
-    private TextMeshPro  playerNameInfo;
-    private TextMeshPro  playerNameMods;
-    private TextMeshPro  velocityInfo;
+
+    private Transform[] playerButtons;
+    private GameObject  playerHighlighter;
+    private TextMeshPro playerNameInfo;
+    private TextMeshPro playerNameMods;
+
+    private int         playersPageIndex;
+    private Transform   playersPanel;
+    private TextMeshPro velocityInfo;
 
     private void Start()
     {
         infoPanel    = transform.Find("InformationTab");
         modsPanel    = transform.Find("ModsTab");
         actionsPanel = transform.Find("ActionsTab");
+        playersPanel = transform.Find("PlayersTab");
 
         infoPanel.gameObject.SetActive(true);
         modsPanel.gameObject.SetActive(false);
         actionsPanel.gameObject.SetActive(false);
+        playersPanel.gameObject.SetActive(false);
+
+        playerButtons = playersPanel.Children().Take(4).ToArray();
+
+        playersPanel.GetChild(4).gameObject.AddComponent<EIOPButton>().OnPress = () =>
+        {
+            playersPageIndex++;
+            UpdatePlayerButtons();
+        };
+
+        playersPanel.GetChild(5).gameObject.AddComponent<EIOPButton>().OnPress = () =>
+        {
+            playersPageIndex--;
+            UpdatePlayerButtons();
+        };
 
         transform.Find("InformationTabButton").AddComponent<EIOPButton>().OnPress = () =>
         {
             infoPanel.gameObject.SetActive(true);
             modsPanel.gameObject.SetActive(false);
             actionsPanel.gameObject.SetActive(false);
+            playersPanel.gameObject.SetActive(false);
         };
 
         transform.Find("ModsTabButton").AddComponent<EIOPButton>().OnPress = () =>
@@ -63,17 +85,37 @@ public class InformationHandler : TabHandlerBase
                                                                                  modsPanel.gameObject.SetActive(true);
                                                                                  actionsPanel.gameObject.SetActive(
                                                                                          false);
+
+                                                                                 playersPanel.gameObject.SetActive(
+                                                                                         false);
                                                                              };
 
         transform.Find("ActionsTabButton").AddComponent<EIOPButton>().OnPress = () =>
         {
+            if (chosenRig == null)
+                return;
+
             infoPanel.gameObject.SetActive(false);
             modsPanel.gameObject.SetActive(false);
             actionsPanel.gameObject.SetActive(true);
+            playersPanel.gameObject.SetActive(false);
             actionsPanel.GetChild(4).GetComponentInChildren<TextMeshPro>().text =
                     VoicePrioritizationPatch.PrioritizedPeople.Contains(chosenRig)
                             ? "Unprioritize"
                             : "Prioritize";
+        };
+
+        transform.Find("PlayersTabButton").AddComponent<EIOPButton>().OnPress = () =>
+        {
+            if (Extensions.PlayersWithCosmetics.Count == 0)
+                return;
+
+            infoPanel.gameObject.SetActive(false);
+            modsPanel.gameObject.SetActive(false);
+            actionsPanel.gameObject.SetActive(false);
+            playersPanel.gameObject.SetActive(true);
+
+            UpdatePlayerButtons();
         };
 
         playerNameInfo          = infoPanel.GetChild(0).GetComponent<TextMeshPro>();
@@ -141,6 +183,9 @@ public class InformationHandler : TabHandlerBase
                     if (ControllerInputPoller.instance.rightControllerIndexFloat > 0.5f ||
                         Mouse.current.leftButton.wasPressedThisFrame)
                     {
+                        if (!rig.HasCosmetics())
+                            return;
+
                         OnNewRig(rig);
                         chosenRig = rig;
                     }
@@ -163,31 +208,6 @@ public class InformationHandler : TabHandlerBase
             string colour = fps < 60 ? "red" : fps < 72 ? "yellow" : "green";
             fpsInfo.text        = $"<color={colour}>{fps}</color> FPS";
             colourCodeInfo.text = ParseIntoColourCode(chosenRig.playerColor);
-
-            bool hasCosmetx = false;
-
-            CosmeticsController.CosmeticSet cosmeticSet = chosenRig.cosmeticSet;
-            foreach (CosmeticsController.CosmeticItem cosmetic in cosmeticSet.items)
-                if (!cosmetic.isNullItem &&
-                    !chosenRig.concatStringOfCosmeticsAllowed.Contains(cosmetic.itemName))
-                {
-                    hasCosmetx = true;
-
-                    break;
-                }
-
-            switch (hasCosmetx)
-            {
-                case true when !installedMods.text.Contains("CosmetX"):
-                    installedMods.text += "\n[<color=red>CosmetX</color>]";
-
-                    break;
-
-                case false when installedMods.text.Contains("CosmetX"):
-                    installedMods.text = installedMods.text.Replace("[<color=red>CosmetX</color>]", "").Trim();
-
-                    break;
-            }
 
             if (lastUpdate + 0.1f < Time.time)
             {
@@ -232,6 +252,33 @@ public class InformationHandler : TabHandlerBase
         chosenRig = null;
         HighlightPlayer(null);
         NoPlayerSelected();
+    }
+
+    private void UpdatePlayerButtons()
+    {
+        int amountPages = Extensions.PlayersWithCosmetics.Count == 0
+                                  ? 0
+                                  : Mathf.CeilToInt(Extensions.PlayersWithCosmetics.Count / 4f);
+
+        playersPageIndex = (playersPageIndex + amountPages) % amountPages;
+        VRRig[] currentRigs = Extensions.PlayersWithCosmetics.Skip(playersPageIndex * 4).Take(4).ToArray();
+
+        foreach (Transform playerButton in playerButtons)
+            playerButton.gameObject.SetActive(false);
+
+        for (int i = 0; i < currentRigs.Length; i++)
+        {
+            VRRig     rig          = currentRigs[i];
+            Transform playerButton = playerButtons[i];
+            playerButton.gameObject.SetActive(true);
+            playerButton.GetComponentInChildren<TextMeshPro>().text = rig.OwningNetPlayer.SanitizedNickName;
+            playerButton.gameObject.GetOrAddComponent<EIOPButton>().OnPress = () =>
+                                                                              {
+                                                                                  OnNewRig(rig);
+                                                                                  chosenRig = rig;
+                                                                                  HighlightPlayer(rig);
+                                                                              };
+        }
     }
 
     private void SetUpActionsPanel()
@@ -395,11 +442,17 @@ public class InformationHandler : TabHandlerBase
 
     private void NoPlayerSelected()
     {
+        infoPanel.gameObject.SetActive(true);
+        modsPanel.gameObject.SetActive(false);
+        actionsPanel.gameObject.SetActive(false);
+        playersPanel.gameObject.SetActive(false);
+
         playerNameInfo.text          = "No player selected";
         platformInfo.text            = "-";
         fpsInfo.text                 = "-";
         pingInfo.text                = "-";
         colourCodeInfo.text          = "-";
+        velocityInfo.text            = "-";
         accountCreationDateInfo.text = "-";
         playerNameMods.text          = "No player selected";
         installedMods.text           = "-";
@@ -409,8 +462,8 @@ public class InformationHandler : TabHandlerBase
     {
         if (rig == null)
         {
-            playerHighlighter.transform.SetParent(null);
-            playerHighlighter.SetActive(false);
+            playerHighlighter?.transform.SetParent(null);
+            playerHighlighter?.SetActive(false);
         }
         else
         {

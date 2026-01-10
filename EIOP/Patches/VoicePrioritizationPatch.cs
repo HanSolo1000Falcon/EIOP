@@ -7,7 +7,7 @@ namespace EIOP.Patches;
 [HarmonyPatch(typeof(VRRig), nameof(VRRig.PostTick))]
 public static class VoicePrioritizationPatch
 {
-    public static List<VRRig> PrioritizedPeople = [];
+    public static readonly List<VRRig> PrioritizedPeople = [];
 
     private static void Postfix(VRRig __instance)
     {

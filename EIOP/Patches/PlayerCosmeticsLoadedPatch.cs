@@ -21,6 +21,9 @@ public static class PlayerCosmeticsLoadedPatch
 
     private static async void OnLoad(VRRig rig)
     {
+        if (rig.isLocal)
+            return;
+
         Extensions.PlayersWithCosmetics.Add(rig);
 
         DateTime playerCreationDate;
@@ -66,7 +69,7 @@ public static class PlayerCosmeticsLoadedPatch
 
         EIOPUtils.OnPlayerCosmeticsLoaded?.Invoke(rig);
 
-        string cosmeticsAllowed = rig.concatStringOfCosmeticsAllowed.ToLower();
+        string cosmeticsAllowed = rig.rawCosmeticString.ToLower();
 
         if (cosmeticsAllowed.Contains("s. first login"))
         {

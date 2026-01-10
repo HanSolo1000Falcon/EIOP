@@ -1,4 +1,5 @@
 using EIOP.Core;
+using EIOP.Patches;
 using GorillaNetworking;
 using Photon.Pun;
 using TMPro;
@@ -14,8 +15,7 @@ public class RoomHandler : TabHandlerBase
     {
         transform.GetChild(0).AddComponent<EIOPButton>().OnPress = () => NetworkSystem.Instance.ReturnToSinglePlayer();
         transform.GetChild(1).AddComponent<EIOPButton>().OnPress =
-                () => PhotonNetworkController.Instance.AttemptToJoinSpecificRoom("DEE" + Random.Range(0, 9999),
-                        JoinType.Solo);
+                () => PhotonNetworkController.Instance.AttemptToJoinPublicRoom(GorillaNetworkJoinTriggerPatch.LastGorillaNetworkJoinTrigger ?? FindFirstObjectByType<GorillaNetworkJoinTrigger>());
 
         transform.GetChild(2).AddComponent<EIOPButton>().OnPress = () =>
                                                                    {

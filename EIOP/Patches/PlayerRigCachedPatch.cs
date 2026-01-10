@@ -15,6 +15,8 @@ public class PlayerRigCachedPatch
         Extensions.PlayerPlatforms.Remove(vrrig);
         Extensions.PlayerMods.Remove(vrrig);
         CosmetXChecker.LastCosmetXState.Remove(vrrig);
+        if (CosmetXChecker.SentCosmetXNotif.Contains(vrrig))
+            CosmetXChecker.SentCosmetXNotif.Remove(vrrig);
         if (VoicePrioritizationPatch.PrioritizedPeople.Contains(vrrig))
             VoicePrioritizationPatch.PrioritizedPeople.Remove(vrrig);
     }

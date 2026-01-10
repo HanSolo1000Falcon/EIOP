@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Photon.Pun;
+using UnityEngine;
 
 namespace EIOP.Tools;
 
@@ -46,6 +48,11 @@ public static class Extensions
                        var _                 => false,
                };
     }
+
+    public static Transform[] Children(this Transform transform) => transform.Cast<Transform>()
+                                                                             .Where(child => child != transform &&
+                                                                                      child.parent == transform)
+                                                                             .ToArray();
 
     public static string[] GetPlayerMods(this VRRig rig) => PlayerMods[rig].ToArray();
 

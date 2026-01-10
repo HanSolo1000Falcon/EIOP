@@ -9,6 +9,7 @@ namespace EIOP.Anti_Cheat;
 public class CosmetXChecker : AntiCheatHandlerBase
 {
     public static readonly Dictionary<VRRig, bool> LastCosmetXState = new();
+    public static readonly List<VRRig>             SentCosmetXNotif = [];
 
     private void Update()
     {
@@ -23,15 +24,19 @@ public class CosmetXChecker : AntiCheatHandlerBase
 
             CosmeticsController.CosmeticSet cosmeticSet = rig.cosmeticSet;
             if (cosmeticSet.items.Any(cosmetic => !cosmetic.isNullItem &&
-                                                  !rig.concatStringOfCosmeticsAllowed.Contains(cosmetic.itemName)))
+                                                  !rig.rawCosmeticString.Contains(cosmetic.itemName)))
                 hasCosmetx = true;
 
             switch (hasCosmetx)
             {
                 case true when LastCosmetXState.ContainsKey(rig) && !LastCosmetXState[rig]:
                 {
-                    Notifications.SendNotification(
-                            $"[<color=red>Cheater</color>] Player {rig.OwningNetPlayer.SanitizedNickName} has CosmetX installed.");
+                    if (!SentCosmetXNotif.Contains(rig))
+                    {
+                        Notifications.SendNotification(
+                                $"[<color=red>Cheater</color>] Player {rig.OwningNetPlayer.SanitizedNickName} has CosmetX installed.");
+                        SentCosmetXNotif.Add(rig);
+                    }
 
                     if (Extensions.PlayerMods[rig] != null &&
                         !Extensions.PlayerMods[rig].Contains("[<color=red>CosmetX</color>]"))

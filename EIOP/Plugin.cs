@@ -71,7 +71,6 @@ public class Plugin : BaseUnityPlugin
         gameObject.AddComponent<CoroutineManager>();
         gameObject.AddComponent<EIOPUtils>();
         gameObject.AddComponent<Notifications>();
-        gameObject.AddComponent<NetworkingHandler>();
         gameObject.AddComponent<MenuHandler>();
 
         FetchModsAndCheats();
