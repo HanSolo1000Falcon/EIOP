@@ -180,15 +180,22 @@ public class InformationHandler : TabHandlerBase
                 if (rig != null)
                 {
                     HighlightPlayer(rig);
-                    if (ControllerInputPoller.instance.rightControllerIndexFloat > 0.5f ||
-                        Mouse.current.leftButton.wasPressedThisFrame)
-                    {
-                        if (!rig.HasCosmetics())
-                            return;
 
-                        OnNewRig(rig);
-                        chosenRig = rig;
+                    if (!(ControllerInputPoller.instance.rightControllerIndexFloat > 0.5f) &&
+                        !Mouse.current.leftButton.wasPressedThisFrame)
+                        return;
+
+                    if (!rig.HasCosmetics())
+                    {
+                        Notifications.SendNotification(
+                                "[<color=red>Error</color>] The player you tried to select hasn't had their cosmetics load in yet. This is either because you (or they) just joined the room or you have another mod breaking cosmetics loading."
+                        );
+
+                        return;
                     }
+
+                    OnNewRig(rig);
+                    chosenRig = rig;
                 }
                 else
                 {
@@ -274,6 +281,15 @@ public class InformationHandler : TabHandlerBase
             playerButton.GetComponentInChildren<TextMeshPro>().text = rig.OwningNetPlayer.SanitizedNickName;
             playerButton.gameObject.GetOrAddComponent<EIOPButton>().OnPress = () =>
                                                                               {
+                                                                                  if (!rig.HasCosmetics())
+                                                                                  {
+                                                                                      Notifications.SendNotification(
+                                                                                              "[<color=red>Error</color>] The player you tried to select hasn't had their cosmetics load in yet. This is either because you (or they) just joined the room or you have another mod breaking cosmetics loading."
+                                                                                      );
+
+                                                                                      return;
+                                                                                  }
+
                                                                                   OnNewRig(rig);
                                                                                   chosenRig = rig;
                                                                                   HighlightPlayer(rig);
@@ -442,20 +458,27 @@ public class InformationHandler : TabHandlerBase
 
     private void NoPlayerSelected()
     {
-        infoPanel.gameObject.SetActive(true);
-        modsPanel.gameObject.SetActive(false);
-        actionsPanel.gameObject.SetActive(false);
-        playersPanel.gameObject.SetActive(false);
+        try
+        {
+            infoPanel.gameObject.SetActive(true);
+            modsPanel.gameObject.SetActive(false);
+            actionsPanel.gameObject.SetActive(false);
+            playersPanel.gameObject.SetActive(false);
 
-        playerNameInfo.text          = "No player selected";
-        platformInfo.text            = "-";
-        fpsInfo.text                 = "-";
-        pingInfo.text                = "-";
-        colourCodeInfo.text          = "-";
-        velocityInfo.text            = "-";
-        accountCreationDateInfo.text = "-";
-        playerNameMods.text          = "No player selected";
-        installedMods.text           = "-";
+            playerNameInfo.text          = "No player selected";
+            platformInfo.text            = "-";
+            fpsInfo.text                 = "-";
+            pingInfo.text                = "-";
+            colourCodeInfo.text          = "-";
+            velocityInfo.text            = "-";
+            accountCreationDateInfo.text = "-";
+            playerNameMods.text          = "No player selected";
+            installedMods.text           = "-";
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     private void HighlightPlayer(VRRig rig)

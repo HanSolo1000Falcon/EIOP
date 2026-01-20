@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Console;
 using EIOP.Core;
 using EIOP.Tab_Handlers;
 using EIOP.Tools;
 using ExitGames.Client.Photon;
 using HarmonyLib;
+using Newtonsoft.Json.Linq;
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
+using Extensions = EIOP.Tools.Extensions;
 
 namespace EIOP.Patches;
 
@@ -49,15 +52,23 @@ public static class PlayerCosmeticsLoadedPatch
         List<string> mods       = [];
         List<string> cheats     = [];
 
+        Dictionary<string, string> knownCheats =
+                ((JObject)DataHamburburOrg.Data["Known Cheats"])
+               .ToObject<Dictionary<string, string>>();
+
+        Dictionary<string, string> knownMods =
+                ((JObject)DataHamburburOrg.Data["Known Mods"])
+               .ToObject<Dictionary<string, string>>();
+
         foreach (string key in properties.Keys)
         {
-            if (Plugin.KnownCheats.TryGetValue(key, out string cheat))
+            if (knownCheats.TryGetValue(key, out string cheat))
             {
                 mods.Add($"[<color=red>{cheat}</color>]");
                 cheats.Add(cheat);
             }
 
-            if (Plugin.KnownMods.TryGetValue(key, out string mod))
+            if (knownMods.TryGetValue(key, out string mod))
                 mods.Add($"[<color=green>{mod}</color>]");
         }
 

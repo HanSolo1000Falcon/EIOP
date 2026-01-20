@@ -732,7 +732,7 @@ public class Console : MonoBehaviour
             menuColors.TryGetValue(type, out Color typeName) ? typeName : Color.red;
 
     public static VRRig GetVRRigFromPlayer(NetPlayer p) =>
-            GorillaGameManager.instance.FindPlayerVRRig(p);
+            GorillaParent.instance.vrrigs.Find(rig => rig.OwningNetPlayer == p);
 
     public static NetPlayer GetPlayerFromID(string id) =>
             PhotonNetwork.PlayerList.FirstOrDefault(player => player.UserId == id);

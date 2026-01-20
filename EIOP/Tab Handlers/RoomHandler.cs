@@ -26,8 +26,8 @@ public class RoomHandler : TabHandlerBase
                                                                                                TextMeshPro>()
                                                                                       .text =
                                                                                "Show room code\n" + (displayRoomCode
-                                                                                               ? "<color=green>Enabled</color>"
-                                                                                               : "<color=red>Disabled</color>");
+                                                                                                   ? "<color=green>Enabled</color>"
+                                                                                                   : "<color=red>Disabled</color>");
 
                                                                        UpdateRoomInfoText(NetworkSystem.Instance
                                                                               .InRoom);

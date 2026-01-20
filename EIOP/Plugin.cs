@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using BepInEx;
 using EIOP.Anti_Cheat;
 using EIOP.Core;
 using EIOP.Tools;
 using HarmonyLib;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace EIOP;
@@ -17,12 +14,6 @@ namespace EIOP;
 [BepInPlugin(Constants.PluginGuid, Constants.PluginName, Constants.PluginVersion)]
 public class Plugin : BaseUnityPlugin
 {
-    private const string GorillaInfoEndPointURL =
-            "https://raw.githubusercontent.com/HanSolo1000Falcon/GorillaInfo/main/";
-
-    public static Dictionary<string, string> KnownCheats;
-    public static Dictionary<string, string> KnownMods;
-
     public static AssetBundle EIOPBundle;
     public static Shader      UberShader;
     public static AudioClip   ButtonPressSound;
@@ -72,34 +63,6 @@ public class Plugin : BaseUnityPlugin
         gameObject.AddComponent<EIOPUtils>();
         gameObject.AddComponent<Notifications>();
         gameObject.AddComponent<MenuHandler>();
-
-        FetchModsAndCheats();
-    }
-
-    private void FetchModsAndCheats()
-    {
-        using HttpClient httpClient = new();
-        HttpResponseMessage gorillaInfoEndPointResponse =
-                httpClient.GetAsync(GorillaInfoEndPointURL + "KnownCheats.txt").Result;
-
-        using (Stream stream = gorillaInfoEndPointResponse.Content.ReadAsStreamAsync().Result)
-        {
-            using (StreamReader reader = new(stream))
-            {
-                KnownCheats = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.ReadToEnd());
-            }
-        }
-
-        HttpResponseMessage knownModsEndPointResponse =
-                httpClient.GetAsync(GorillaInfoEndPointURL + "KnownMods.txt").Result;
-
-        using (Stream stream = knownModsEndPointResponse.Content.ReadAsStreamAsync().Result)
-        {
-            using (StreamReader reader = new(stream))
-            {
-                KnownMods = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.ReadToEnd());
-            }
-        }
     }
 
     private AudioClip LoadWavFromResource(string resourcePath)

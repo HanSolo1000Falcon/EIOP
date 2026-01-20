@@ -27,6 +27,9 @@
         <Reference Include="Cinemachine">
             <HintPath>$(GameAssemblyPath)\Unity.Cinemachine.dll</HintPath>
         </Reference>
+        <Reference Include="GT_CustomMapSupportRuntime">
+            <HintPath>$(GameAssemblyPath)\GT_CustomMapSupportRuntime.dll</HintPath>
+        </Reference>
         <Reference Include="Mono.Security">
             <HintPath>$(GameAssemblyPath)\Mono.Security.dll</HintPath>
         </Reference>
