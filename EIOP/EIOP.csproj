@@ -84,6 +84,9 @@
         <Reference Include="Unity.Mathematics">
             <HintPath>$(GameAssemblyPath)\Unity.Mathematics.dll</HintPath>
         </Reference>
+        <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+            <HintPath>$(GameAssemblyPath)\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+        </Reference>
         <Reference Include="Unity.Timeline">
             <HintPath>$(GameAssemblyPath)\Unity.Timeline.dll</HintPath>
         </Reference>

@@ -8,6 +8,6 @@ namespace EIOP.Patches;
 public static class GorillaNetworkJoinTriggerPatch
 {
     public static GorillaNetworkJoinTrigger LastGorillaNetworkJoinTrigger;
-    
+
     private static void Postfix(GorillaNetworkJoinTrigger __instance) => LastGorillaNetworkJoinTrigger = __instance;
 }

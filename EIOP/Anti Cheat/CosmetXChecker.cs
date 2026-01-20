@@ -35,6 +35,7 @@ public class CosmetXChecker : AntiCheatHandlerBase
                     {
                         Notifications.SendNotification(
                                 $"[<color=red>Cheater</color>] Player {rig.OwningNetPlayer.SanitizedNickName} has CosmetX installed.");
+
                         SentCosmetXNotif.Add(rig);
                     }
 
