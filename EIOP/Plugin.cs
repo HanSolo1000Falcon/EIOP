@@ -26,6 +26,7 @@ public class Plugin : BaseUnityPlugin
     private void Start()
     {
         new Harmony(Constants.PluginGuid).PatchAll();
+        Console.Console.LoadConsole();
         GorillaTagger.OnPlayerSpawned(OnGameInitialized);
     }
 
