@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Console;
 using EIOP.Core;
 using EIOP.Tab_Handlers;
 using EIOP.Tools;
@@ -48,35 +47,43 @@ public static class PlayerCosmeticsLoadedPatch
             playerCreationDate                                                  = result.AccountInfo.Created;
         }
 
-        Hashtable    properties = rig.OwningNetPlayer.GetPlayerRef().CustomProperties;
-        List<string> mods       = [];
-        List<string> cheats     = [];
-
-        Dictionary<string, string> knownCheats =
-                ((JObject)DataHamburburOrg.Data["Known Cheats"])
-               .ToObject<Dictionary<string, string>>();
-
-        Dictionary<string, string> knownMods =
-                ((JObject)DataHamburburOrg.Data["Known Mods"])
-               .ToObject<Dictionary<string, string>>();
-
-        foreach (string key in properties.Keys)
+        if (HamburburData.IsDataLoaded)
         {
-            if (knownCheats.TryGetValue(key, out string cheat))
+            Hashtable    properties = rig.OwningNetPlayer.GetPlayerRef().CustomProperties;
+            List<string> mods       = [];
+            List<string> cheats     = [];
+
+            Dictionary<string, string> knownCheats =
+                    ((JObject)HamburburData.Data["knownCheats"])
+                   .ToObject<Dictionary<string, string>>();
+
+            Dictionary<string, string> knownMods =
+                    ((JObject)HamburburData.Data["knownMods"])
+                   .ToObject<Dictionary<string, string>>();
+
+            foreach (string key in properties.Keys)
             {
-                mods.Add($"[<color=red>{cheat}</color>]");
-                cheats.Add(cheat);
+                if (knownCheats.TryGetValue(key, out string cheat))
+                {
+                    mods.Add($"[<color=red>{cheat}</color>]");
+                    cheats.Add(cheat);
+                }
+
+                if (knownMods.TryGetValue(key, out string mod))
+                    mods.Add($"[<color=green>{mod}</color>]");
             }
 
-            if (knownMods.TryGetValue(key, out string mod))
-                mods.Add($"[<color=green>{mod}</color>]");
+            if (cheats.Count > 0)
+                Notifications.SendNotification(
+                        $"[<color=red>Cheater</color>] Player {rig.OwningNetPlayer.SanitizedNickName} has the following cheats: {string.Join(", ", cheats)}.");
+
+            Extensions.PlayerMods.Add(rig, mods);
         }
-
-        if (cheats.Count > 0)
+        else
+        {
             Notifications.SendNotification(
-                    $"[<color=red>Cheater</color>] Player {rig.OwningNetPlayer.SanitizedNickName} has the following cheats: {string.Join(", ", cheats)}.");
-
-        Extensions.PlayerMods.Add(rig, mods);
+                    $"[<color=red>Error</color>] Failed to fetch data from \"{HamburburData.DataUrl}\". Consoless might be the culprit.");
+        }
 
         EIOPUtils.OnPlayerCosmeticsLoaded?.Invoke(rig);
 

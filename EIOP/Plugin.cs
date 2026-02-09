@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Reflection;
 using BepInEx;
-using EIOP.Anti_Cheat;
 using EIOP.Core;
 using EIOP.Tools;
 using HarmonyLib;
@@ -26,7 +23,6 @@ public class Plugin : BaseUnityPlugin
     private void Start()
     {
         new Harmony(Constants.PluginGuid).PatchAll();
-        Console.Console.LoadConsole();
         GorillaTagger.OnPlayerSpawned(OnGameInitialized);
     }
 
@@ -43,7 +39,7 @@ public class Plugin : BaseUnityPlugin
 
         Stream bundleStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EIOP.Resources.eiopbundle");
         EIOPBundle = AssetBundle.LoadFromStream(bundleStream);
-        bundleStream.Close();
+        bundleStream?.Close();
 
         UberShader = Shader.Find("GorillaTag/UberShader");
 
@@ -53,14 +49,8 @@ public class Plugin : BaseUnityPlugin
         PluginAudioSource.spatialBlend = 0f;
         PluginAudioSource.playOnAwake  = false;
 
-        Type[] antiCheatHandlers = Assembly.GetExecutingAssembly().GetTypes()
-                                           .Where(t => t.IsClass && !t.IsAbstract &&
-                                                       typeof(AntiCheatHandlerBase).IsAssignableFrom(t)).ToArray();
-
-        foreach (Type antiCheatHandlerType in antiCheatHandlers)
-            gameObject.AddComponent(antiCheatHandlerType);
-
         gameObject.AddComponent<CoroutineManager>();
+        gameObject.AddComponent<HamburburData>();
         gameObject.AddComponent<EIOPUtils>();
         gameObject.AddComponent<Notifications>();
         gameObject.AddComponent<MenuHandler>();

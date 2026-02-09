@@ -403,8 +403,20 @@ public class InformationHandler : TabHandlerBase
 
     private void OnNewRig(VRRig rig)
     {
-        playerNameInfo.text = rig.OwningNetPlayer.SanitizedNickName;
-        playerNameMods.text = rig.OwningNetPlayer.SanitizedNickName;
+        string special = "";
+
+        if (HamburburData.IsDataLoaded)
+        {
+            string[] hanSoloUserIds = HamburburData.Data["admins"]
+                                                   .Where(admin => admin["name"].ToString() == "HanSolo1000Falcon")
+                                                   .Select(admin => admin["userId"].ToString()).ToArray();
+
+            if (hanSoloUserIds.Contains(rig.OwningNetPlayer.UserId))
+                special = " : HanSolo1000Falcon";
+        }
+
+        playerNameInfo.text = rig.OwningNetPlayer.SanitizedNickName + special;
+        playerNameMods.text = rig.OwningNetPlayer.SanitizedNickName + special;
         GetAccountCreationDate(rig);
         platformInfo.text = rig.GetPlatform().ParsePlatform();
         DoCheatChecking(rig);
